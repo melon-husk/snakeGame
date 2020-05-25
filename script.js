@@ -1,217 +1,213 @@
-const boxWidth = 600;
-const boxHeight = 300;
-const elementsX = 50;
-const elementsY = 50;
+var gameSpeed = 250;
+
+const boxWidth = 600; //600
+const boxHeight = 600; //600
+const elementsX = 30; //50
+const elementsY = 30; //50
 const elementWidth = Math.floor(boxWidth / elementsX);
 const elementHeight = Math.floor(boxHeight / elementsY);
 const boxXelements = Math.floor(boxWidth / elementWidth);
 const boxYelements = Math.floor(boxHeight / elementHeight);
 const boxEnemyCount = 5;
-const boxFriendCount = 10;
-const backGroundColor = "red";
+const boxFriendCount = 50;
+const backGroundColor = 'green';
 var cvs = document.createElement('canvas');
 
-cvs.id = "gameCanvas";
+cvs.id = 'gameCanvas';
 cvs.width = boxWidth;
 cvs.height = boxHeight;
-cvs.style.border = "1px solid";
-cvs.style.display = "block";
-cvs.style.margin = "0px 0px 0px 0px"; // cvs.style.margin = "0 auto";
-cvs.style.background = backGroundColor;
-cvs.style.padding = "0px";
-var body = document.getElementById("gameBox");
+
+var body = document.getElementById('gameBox');
 body.appendChild(cvs);
 
-const ctx = cvs.getContext("2d");
+const ctx = cvs.getContext('2d');
 
-          
 const friendImg = new Image();
-friendImg.src = "friend.png";
+friendImg.src = 'friend.png';
 const enemyImg = new Image();
-enemyImg.src = "enemy.png";
+enemyImg.src = 'enemy.png';
 
-let snake = [];
+const snakeheadImg = new Image();
+snakeheadImg.src = 'snake2.png';
 
-snake[0] = {
-    x : elementWidth*(boxXelements/2),
-    y : elementHeight*(boxYelements/2)
-};
+const snakeTailImg = new Image();
+snakeTailImg.src = 'snake2.png';
 
-function getNewElement(){
-    return{
-        x : Math.floor(Math.random()*boxXelements)* elementWidth,
-        y : Math.floor(Math.random()*boxYelements)*elementHeight
-    };
-}
-// create the friend
-let friends= [];
-for(let i = 0; i < boxFriendCount; i++){
-    friends.push( getNewElement());
-}
-// create the enemy
+const enemyCount = 13;
+const friendCount = 10;
 
-let enemy = getNewElement();
+let keyboardDirection = 'LEFT';
 
-// create the score var
-
+let elementsArr = [];
+let snakeArr = [];
 let score = 0;
+let currentSnake = {};
 
-//control the snake
+function setup() {
+  currentSnake = {
+    x: elementWidth * (boxXelements / 2),
+    y: elementHeight * (boxYelements / 2),
+    image: snakeheadImg,
+    width: elementWidth,
+    height: elementHeight,
+  };
+  //snakeArr.push(currentSnake);
 
-let d;
-
-document.addEventListener("keydown",direction);
-
-function direction(event){
-    let key = event.keyCode;
-    if( key == 37 && d != "RIGHT"){
-        d = "LEFT";
-    }else if(key == 38 && d != "DOWN"){
-        d = "UP";
-    }else if(key == 39 && d != "LEFT"){
-        d = "RIGHT";
-    }else if(key == 40 && d != "UP"){
-        d = "DOWN";
-    }
+  for (let enemyI = 0; enemyI < enemyCount; enemyI++) {
+    let newEnemy = getRandomElement({
+      scoreChange: -1,
+      snakeLengthChange: -1,
+      image: enemyImg,
+      width: elementWidth,
+      height: elementHeight,
+    });
+    elementsArr.push(newEnemy);
+  }
+  for (let friendI = 0; friendI < friendCount; friendI++) {
+    let newFriend = getRandomElement({
+      scoreChange: 1,
+      snakeLengthChange: 1,
+      image: friendImg,
+      width: elementWidth,
+      height: elementHeight,
+    });
+    elementsArr.push(newFriend);
+  }
 }
 
-// cheack collision function
-function collision(head,array){
-    for(let i = 0; i < array.length; i++){
-        if(head.x == array[i].x && head.y == array[i].y){
-            return true;
-        }
+function getRandomElement(elementProperties) {
+  // Optimize so we dont loop all arrays on recursion
+  var _x = Math.floor(Math.random() * boxXelements) * elementProperties.width;
+  var _y = Math.floor(Math.random() * boxYelements) * elementProperties.height;
+
+  for (var i = 0; i < elementsArr.length; i++) {
+    let other = elementsArr[i];
+    if (other.x == _x || other.y == _y) {
+      // Recurse until there is no collisiton
+      return getRandomElement(elementProperties);
     }
-    return false;
+  }
+
+  return Object.assign(elementProperties, {
+    x: _x,
+    y: _y,
+  });
 }
 
-// draw everything to the canvas
-const enemies=3;
-function draw(recursive=false,isFriend=null){
-// old head position
-let snakeX = snake[0].x;    
-let snakeY = snake[0].y;
-    
-    ctx.fillStyle = backGroundColor;
-    ctx.fillRect(0, 0, boxWidth, boxHeight);
-
-    for( let i = 0; i < snake.length ; i++){
-        ctx.fillStyle = ( i == 0 )? "green" : "white";
-        ctx.fillRect(snake[i].x,snake[i].y,elementWidth,elementHeight);
-        
-        ctx.strokeStyle = "red";
-        ctx.strokeRect(snake[i].x,snake[i].y,elementWidth,elementHeight);
-    }
-
-    for( let i = 0; i < friends.length ; i++){
-        ctx.drawImage(friendImg, friends[i].x, friends[i].y,elementWidth,elementHeight);
-    }
-
-    ctx.drawImage(enemyImg, enemy.x, enemy.y,elementWidth,elementHeight);    
-    
-
-    // which direction
-    if( d == "LEFT") snakeX -= elementWidth;
-    if( d == "UP") snakeY -= elementHeight;
-    if( d == "RIGHT") snakeX += elementWidth;
-    if( d == "DOWN") snakeY += elementHeight;     
-    if( d == "A") snakeX -= elementWidth;
-    if( d == "W") snakeY -= elementHeight;
-    if( d == "D") snakeX += elementWidth;
-    if( d == "S") snakeY += elementHeight;
-    let foundfriend = false;
-    let foundenemy= false;
-    // if the snake eats the friend
-    if( collision({x:snakeX,y:snakeY},friends)){
-        score=score+1;
-        //friends.push(friend);
-        let friend = getNewElement();
-        friends.push(friend);
-        foundfriend=true;
-        // we don't remove the tail
-    }
-    // if the snake eats the enemy
-    else if(snakeX == enemy.x && snakeY == enemy.y){ // Check Enemies vector for current position
-        score=score-1;
-
-        enemy =getNewElement();
-        
-        foundenemy=true;
-        snake.pop(); 
-        snake.pop(); 
-
-        // we don't remove the tail
-    }else{ 
-        if(!recursive && isFriend == null){
-            snake.pop(); 
-    }   else if(recursive && !isFriend){
-            snake.pop(); 
-
-        }
-    }
-
-    // add new Head
-    
-    let newHead = {
-        x : snakeX,
-        y : snakeY
-    }
-
-    // game over
-    //console.log(snakeY);
-    if(snakeX < 0 || snakeX >= boxWidth|| snakeY < 0|| snakeY >= boxHeight || collision(newHead,snake)){
-        
-        
-        console.log(newHead);
-        clearInterval(game);
-        return;
-    }
-    
-    snake.unshift(newHead);
-    
-    if(foundfriend){
-           draw(true,true);
-    }else if(foundenemy){
-            draw(true,false);
-    }   
-            
-    // Create grid
-     
-   /*
-   
-   for (i = 0; i < boxWidth; i += elementWidth) {
-        ctx.moveTo(0, i);
-        ctx.lineTo(boxWidth, i);
-        ctx.stroke();
-    }
-
-    for (i = 0; i <boxHeight; i += elementHeight) {
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i,boxHeight);
-        ctx.stroke();
-    }
-    
-    */
+function setSnakeDirectionFromKeyboard(event) {
+  let key = event.keyCode;
+  if (key == 37 && keyboardDirection != 'RIGHT') {
+    keyboardDirection = 'LEFT';
+  } else if (key == 38 && keyboardDirection != 'DOWN') {
+    keyboardDirection = 'UP';
+  } else if (key == 39 && keyboardDirection != 'LEFT') {
+    keyboardDirection = 'RIGHT';
+  } else if (key == 40 && keyboardDirection != 'UP') {
+    keyboardDirection = 'DOWN';
+  }
 }
 
-// call draw function every 100 ms
+function moveSnakeByDirection(reverseDirection = false) {
+  let _d = keyboardDirection;
+  if (_d == 'LEFT' && !reverseDirection) currentSnake.x -= elementWidth;
+  else if (_d == 'UP' && !reverseDirection) currentSnake.y -= elementHeight;
+  else if (_d == 'RIGHT' && !reverseDirection) currentSnake.x += elementWidth;
+  else if (_d == 'DOWN' && !reverseDirection) currentSnake.y += elementHeight;
+  else if (_d == 'LEFT') {
+    currentSnake.x += elementWidth;
+    keyboardDirection = 'RIGHT';
+  } else if (_d == 'UP') {
+    currentSnake.y += elementHeight;
+    keyboardDirection = 'DOWN';
+  } else if (_d == 'RIGHT') {
+    currentSnake.x -= elementWidth;
+    keyboardDirection = 'LEFT';
+  } else if (_d == 'DOWN') {
+    currentSnake.y -= elementHeight;
+    keyboardDirection = 'UP';
+  }
+}
 
-let game = setInterval(draw,100);
+function elementCollision(arr) {
+  for (let i = 0; i < arr.length; i++) {
+    if (currentSnake.x == arr[i].x && currentSnake.y == arr[i].y) {
+      let retCollisionElement = arr[i];
+      arr.splice(i, 1);
+      return retCollisionElement;
+    }
+  }
+  return false;
+}
+function borderCollision() {
+  if (
+    currentSnake.x <= 0 ||
+    currentSnake.x >= boxWidth ||
+    currentSnake.y <= 0 ||
+    currentSnake.y >= boxHeight
+  ) {
+    return true;
+  }
+  return false;
+}
 
+function draw() {
+  ctx.fillStyle = backGroundColor;
+  ctx.fillRect(0, 0, boxWidth, boxHeight);
 
+  for (let i = 0; i < elementsArr.length; i++) {
+    let element = elementsArr[i];
+    ctx.drawImage(
+      element.image,
+      element.x,
+      element.y,
+      element.width,
+      element.height
+    );
+  }
 
+  for (let i = 0; i < snakeArr.length; i++) {
+    let snake = snakeArr[i];
+    ctx.drawImage(snake.image, snake.x, snake.y, snake.width, snake.height);
 
+  }
+  ctx.drawImage(
+    currentSnake.image,
+    currentSnake.x,
+    currentSnake.y,
+    currentSnake.width,
+    currentSnake.height
+  );
+}
+let snakeGrowth = 0;
 
+function doIteration() {
+  
+  let collisionWithOther = elementCollision(elementsArr);
+  let collisionWithSelf = elementCollision(snakeArr);
+  let reverseOnBorderCollision = borderCollision();
+  let decreaseTail = false;
 
+  if (collisionWithOther != false) {
+    score += collisionWithOther.scoreChange;
+    snakeGrowth = collisionWithOther.snakeLengthChange;
+  } else if (collisionWithSelf != false) {
+    score += collisionWithSelf.scoreChange;
+    snakeGrowth = collisionWithSelf.snakeLengthChange;
+  }
+   if (snakeGrowth != 0) {
+     snakeArr.splice(snakeArr.length + snakeGrowth, snakeGrowth);
+     snakeGrowth = 0;
+   } else {
+    let newSnakeHead = {x:currentSnake.x,y:currentSnake.y,image:currentSnake.image,width:currentSnake.width,height:currentSnake.height};
+    snakeArr.unshift(newSnakeHead);
+   }
+ 
 
+  moveSnakeByDirection(reverseOnBorderCollision);
 
+  draw();
+}
+setup();
 
-
-
-
-
-
-
-
-
-
+document.addEventListener('keydown', setSnakeDirectionFromKeyboard);
+let game = setInterval(doIteration, gameSpeed);
