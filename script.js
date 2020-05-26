@@ -278,7 +278,7 @@ function selectSnakeImage(lastDirection, newDirection) {
   } else if (lastDirection == 'LEFT' && newDirection == 'LEFT') {
   } else if (lastDirection == 'LEFT' && newDirection == 'RIGHT') {
   } else if (lastDirection == 'RIGHT' && newDirection == 'DOWN') {
-  } else if (lastDirection == 'RIGHT' && newDirection == 'UP') {
+  } else if (lastDirection == 'RIGHT' && newDirection == 'DOWN') {
   } else if (lastDirection == 'RIGHT' && newDirection == 'LEFT') {
   } else if (lastDirection == 'RIGHT' && newDirection == 'RIGHT') {
   }
