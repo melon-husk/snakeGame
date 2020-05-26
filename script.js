@@ -8,8 +8,7 @@ const elementWidth = Math.floor(boxWidth / elementsX);
 const elementHeight = Math.floor(boxHeight / elementsY);
 const boxXelements = Math.floor(boxWidth / elementWidth);
 const boxYelements = Math.floor(boxHeight / elementHeight);
-const boxEnemyCount = 5;
-const boxFriendCount = 50;
+
 const backGroundColor = 'green';
 var cvs = document.createElement('canvas');
 
@@ -31,10 +30,10 @@ const snakeheadImg = new Image();
 snakeheadImg.src = 'snake2.png';
 
 const snakeTailImg = new Image();
-snakeTailImg.src = 'snake2.png';
+snakeTailImg.src = 'snakeTail.png';
 
-const enemyCount = 13;
-const friendCount = 10;
+const enemyCount = 15;
+const friendCount = 15;
 
 let keyboardDirection = 'LEFT';
 
@@ -51,7 +50,6 @@ function setup() {
     width: elementWidth,
     height: elementHeight,
   };
-  //snakeArr.push(currentSnake);
 
   for (let enemyI = 0; enemyI < enemyCount; enemyI++) {
     let newEnemy = getRandomElement({
@@ -96,13 +94,13 @@ function getRandomElement(elementProperties) {
 
 function setSnakeDirectionFromKeyboard(event) {
   let key = event.keyCode;
-  if (key == 37 && keyboardDirection != 'RIGHT') {
+  if (key == 37) {
     keyboardDirection = 'LEFT';
-  } else if (key == 38 && keyboardDirection != 'DOWN') {
+  } else if (key == 38) {
     keyboardDirection = 'UP';
-  } else if (key == 39 && keyboardDirection != 'LEFT') {
+  } else if (key == 39) {
     keyboardDirection = 'RIGHT';
-  } else if (key == 40 && keyboardDirection != 'UP') {
+  } else if (key == 40) {
     keyboardDirection = 'DOWN';
   }
 }
@@ -153,7 +151,13 @@ function borderCollision() {
 function draw() {
   ctx.fillStyle = backGroundColor;
   ctx.fillRect(0, 0, boxWidth, boxHeight);
-
+  ctx.drawImage(
+    currentSnake.image,
+    currentSnake.x,
+    currentSnake.y,
+    currentSnake.width,
+    currentSnake.height
+  );
   for (let i = 0; i < elementsArr.length; i++) {
     let element = elementsArr[i];
     ctx.drawImage(
@@ -168,45 +172,54 @@ function draw() {
   for (let i = 0; i < snakeArr.length; i++) {
     let snake = snakeArr[i];
     ctx.drawImage(snake.image, snake.x, snake.y, snake.width, snake.height);
-
   }
-  ctx.drawImage(
-    currentSnake.image,
-    currentSnake.x,
-    currentSnake.y,
-    currentSnake.width,
-    currentSnake.height
-  );
+  ctx.font = '30px Arial';
+  ctx.strokeText('Score: ' + score, 10, 50);
 }
-let snakeGrowth = 0;
-
+let snakeLengthWaiting = 0;
+let initialSnake = true;
 function doIteration() {
-  
   let collisionWithOther = elementCollision(elementsArr);
   let collisionWithSelf = elementCollision(snakeArr);
   let reverseOnBorderCollision = borderCollision();
-  let decreaseTail = false;
 
   if (collisionWithOther != false) {
     score += collisionWithOther.scoreChange;
-    snakeGrowth = collisionWithOther.snakeLengthChange;
+    snakeLengthWaiting += collisionWithOther.snakeLengthChange;
   } else if (collisionWithSelf != false) {
     score += collisionWithSelf.scoreChange;
-    snakeGrowth = collisionWithSelf.snakeLengthChange;
+    snakeLengthWaiting += collisionWithSelf.snakeLengthChange;
   }
-   if (snakeGrowth != 0) {
-     snakeArr.splice(snakeArr.length + snakeGrowth, snakeGrowth);
-     snakeGrowth = 0;
-   } else {
-    let newSnakeHead = {x:currentSnake.x,y:currentSnake.y,image:currentSnake.image,width:currentSnake.width,height:currentSnake.height};
-    snakeArr.unshift(newSnakeHead);
-   }
- 
+
+  if (snakeLengthWaiting < 0) {
+    let decreaseLength = -snakeLengthWaiting;
+    snakeArr = snakeArr.splice(
+      snakeArr.length - decreaseLength,
+      decreaseLength
+    );
+    snakeLengthWaiting = 0;
+  } else if (snakeLengthWaiting > 0) {
+    let increaseLength = snakeLengthWaiting;
+    snakeLengthWaiting -= increaseLength;
+  } else {
+    snakeArr.pop();
+  }
+
+  let newSnakeHead = {
+    x: currentSnake.x,
+    y: currentSnake.y,
+    image: snakeTailImg,
+    width: currentSnake.width,
+    height: currentSnake.height,
+  };
+
+  snakeArr.unshift(newSnakeHead);
 
   moveSnakeByDirection(reverseOnBorderCollision);
 
   draw();
 }
+
 setup();
 
 document.addEventListener('keydown', setSnakeDirectionFromKeyboard);
