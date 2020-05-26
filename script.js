@@ -112,7 +112,7 @@ function setSnakeDirectionFromKeyboard(event) {
 }
 
 function moveSnakeByDirection(collisionBorder = false) {
-  let _d = keyboardDirection;
+  const _d = keyboardDirection;
 
   if (_d == 'LEFT' && collisionBorder == 'LEFT') {
     currentSnake.x += elementWidth;
@@ -126,10 +126,37 @@ function moveSnakeByDirection(collisionBorder = false) {
   } else if (_d == 'DOWN' && collisionBorder == 'DOWN') {
     currentSnake.y -= elementHeight;
     keyboardDirection = 'UP';
+  } else if (_d == 'DOWN' && collisionBorder == 'LEFTDOWN') {
+    currentSnake.y -= elementHeight;
+    keyboardDirection = 'UP';
+  } else if (_d == 'UP' && collisionBorder == 'LEFTUP') {
+    currentSnake.y += elementHeight;
+    keyboardDirection = 'DOWN';
+  } else if (_d == 'LEFT' && collisionBorder == 'LEFTUP') {
+    currentSnake.x += elementWidth;
+    keyboardDirection = 'RIGHT';
+  } else if (_d == 'LEFT' && collisionBorder == 'LEFTDOWN') {
+    currentSnake.x += elementWidth;
+    keyboardDirection = 'RIGHT';
+  } else if (_d == 'RIGHT' && collisionBorder == 'RIGHTDOWN') {
+    currentSnake.x -= elementWidth;
+    keyboardDirection = 'LEFT';
+  } else if (_d == 'DOWN' && collisionBorder == 'RIGHTDOWN') {
+    currentSnake.y -= elementHeight;
+    keyboardDirection = 'UP';
+  } else if (_d == 'UP' && collisionBorder == 'RIGHTUP') {
+    currentSnake.y += elementHeight;
+    keyboardDirection = 'DOWN';
+  } else if (_d == 'RIGHT' && collisionBorder == 'RIGHTUP') {
+    currentSnake.x -= elementWidth;
+    keyboardDirection = 'LEFT';
   } else if (_d == 'LEFT') currentSnake.x -= elementWidth;
   else if (_d == 'UP') currentSnake.y -= elementHeight;
   else if (_d == 'RIGHT') currentSnake.x += elementWidth;
   else if (_d == 'DOWN') currentSnake.y += elementHeight;
+  if (keyboardDirection != _d) {
+    console.log('direction', _d, 'newDirection',keyboardDirection,'collisionBorder', collisionBorder);
+  }
 }
 
 function elementCollision(cSnake, arr) {
