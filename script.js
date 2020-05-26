@@ -1,9 +1,9 @@
-var gameSpeed = 100;
+const fps = 10;
 
 const boxWidth = 600;
 const boxHeight = 600;
-const elementsX = 100;
-const elementsY = 100;
+const elementsX = 60;
+const elementsY = 60;
 const elementWidth = Math.floor(boxWidth / elementsX);
 const elementHeight = Math.floor(boxHeight / elementsY);
 const boxXelements = Math.floor(boxWidth / elementWidth);
@@ -28,23 +28,30 @@ enemyImg.src = 'enemy.png';
 
 const snakeheadImg = new Image();
 snakeheadImg.src = 'snake2.png';
-
-const snakeTailImg = new Image();
-snakeTailImg.src = 'snakeTail.png';
+// Snake image mutations
+const snakeImages = {
+  head: {src: 'snake2.png', obj: new Image()},
+  vertical: {src: 'snakeTail.png', obj: new Image()},
+  horizontal: {src: 'snakeTail.png', obj: new Image()},
+  downLeft: {src: 'snakeTail.png', obj: new Image()},
+  downRight: {src: 'snakeTail.png', obj: new Image()},
+  upLeft: {src: 'snakeTail.png', obj: new Image()},
+  upRight: {src: 'snakeTail.png', obj: new Image()},
+};
 
 const enemyCount = 100;
-const enemyScoreChange = -10;
-const enemyLengthChange = -3;
+const enemyScoreChange = -50;
+const enemyLengthChange = 7;
 
-const friendCount = 500;
-const friendScoreChange = 3;
-const friendLengthChange = 5;
+const friendCount = 200;
+const friendScoreChange = 100;
+const friendLengthChange = -1;
 
 const selfScoreChange = -1;
-const selfLengthChange = 0;
+const selfLengthChange = 3;
 
-const borderCollisionScoreChange = -1;
-const borderCollisionLengthChange = -1;
+const borderCollisionScoreChange = -70;
+const borderCollisionLengthChange = 2;
 
 let keyboardDirection = 'LEFT';
 
@@ -54,14 +61,19 @@ let score = 0;
 let currentSnake = {};
 
 function setup() {
+  for (const img in snakeImages) {
+    snakeImages[img].obj.src = snakeImages[img].src;
+  }
+
   currentSnake = {
     x: elementWidth * (boxXelements / 2),
     y: elementHeight * (boxYelements / 2),
-    image: snakeheadImg,
+    image: snakeImages['head'].obj,
     width: elementWidth,
     height: elementHeight,
     lengthChange: selfLengthChange,
     scoreChange: selfScoreChange,
+    type: 'snake',
   };
 
   for (let enemyI = 0; enemyI < enemyCount; enemyI++) {
@@ -73,6 +85,7 @@ function setup() {
       height: elementHeight,
       x: 0,
       y: 0,
+      type: 'enemy',
     });
     elementsArr.push(newEnemy);
   }
@@ -85,6 +98,7 @@ function setup() {
       height: elementHeight,
       x: 0,
       y: 0,
+      type: 'friend',
     });
     elementsArr.push(newFriend);
   }
@@ -169,6 +183,7 @@ function moveSnakeByDirection(collisionBorder = false) {
   else if (_d == 'UP') currentSnake.y -= elementHeight;
   else if (_d == 'RIGHT') currentSnake.x += elementWidth;
   else if (_d == 'DOWN') currentSnake.y += elementHeight;
+  return {lastDirection: _d, newDirection: keyboardDirection};
 }
 
 function elementCollision(cSnake, arr, removeCollisionElement = true) {
@@ -206,7 +221,8 @@ function borderCollision(cSnake) {
 function draw() {
   ctx.fillStyle = backGroundColor;
   ctx.fillRect(0, 0, boxWidth, boxHeight);
-
+  let friendsLeft = 0;
+  let enemiesLeft = 0;
   for (let i = 0; i < elementsArr.length; i++) {
     let element = elementsArr[i];
     ctx.drawImage(
@@ -216,6 +232,11 @@ function draw() {
       element.width,
       element.height
     );
+    if (element.type == 'friend') {
+      friendsLeft++;
+    } else if (element.type == 'enemy') {
+      enemiesLeft++;
+    }
   }
 
   for (let i = 0; i < snakeArr.length; i++) {
@@ -223,9 +244,15 @@ function draw() {
     ctx.drawImage(snake.image, snake.x, snake.y, snake.width, snake.height);
   }
 
-  ctx.font = '30px Arial';
-  ctx.strokeText('Score: ' + score, 10, 50);
-
+  ctx.font = '25px Arial ';
+  ctx.fillStyle = 'blue';
+  ctx.fillText('Score: ' + score, 10, 50);
+  ctx.fillStyle = 'blue';
+  ctx.fillText('Friends: ' + friendsLeft, 10, 70);
+  ctx.fillStyle = 'blue';
+  ctx.fillText('Enemies: ' + enemiesLeft, 10, 90);
+  ctx.fillStyle = 'blue';
+  ctx.fillText('Length: ' + snakeArr.length, 10, 110);
   ctx.drawImage(
     currentSnake.image,
     currentSnake.x,
@@ -236,7 +263,26 @@ function draw() {
 }
 
 let snakeLengthWaiting = 0;
-
+function selectSnakeImage(lastDirection, newDirection) {
+  if (lastDirection == 'DOWN' && newDirection == 'LEFT') {
+  } else if (lastDirection == 'DOWN' && newDirection == 'DOWN') {
+  } else if (lastDirection == 'DOWN' && newDirection == 'UP') {
+  } else if (lastDirection == 'DOWN' && newDirection == 'LEFT') {
+  } else if (lastDirection == 'DOWN' && newDirection == 'RIGHT') {
+  } else if (lastDirection == 'UP' && newDirection == 'UP') {
+  } else if (lastDirection == 'UP' && newDirection == 'DOWN') {
+  } else if (lastDirection == 'UP' && newDirection == 'LEFT') {
+  } else if (lastDirection == 'UP' && newDirection == 'RIGHT') {
+  } else if (lastDirection == 'LEFT' && newDirection == 'DOWN') {
+  } else if (lastDirection == 'LEFT' && newDirection == 'UP') {
+  } else if (lastDirection == 'LEFT' && newDirection == 'LEFT') {
+  } else if (lastDirection == 'LEFT' && newDirection == 'RIGHT') {
+  } else if (lastDirection == 'RIGHT' && newDirection == 'DOWN') {
+  } else if (lastDirection == 'RIGHT' && newDirection == 'UP') {
+  } else if (lastDirection == 'RIGHT' && newDirection == 'LEFT') {
+  } else if (lastDirection == 'RIGHT' && newDirection == 'RIGHT') {
+  }
+}
 function doIteration() {
   const lastSnake = {
     x: currentSnake.x,
@@ -272,24 +318,43 @@ function doIteration() {
     snakeArr.pop();
   }
 
-  let newSnakeHead = {
+  moveSnakeByDirection(collisionBorder);
+
+  const newSnakeHead = {
     x: lastSnake.x,
     y: lastSnake.y,
-    image: snakeTailImg,
+    image: snakeImages['horizontal'].obj,
     width: lastSnake.width,
     height: lastSnake.height,
     lengthChange: lastSnake.lengthChange,
     scoreChange: lastSnake.scoreChange,
+    type: 'snake',
   };
-
-  moveSnakeByDirection(collisionBorder);
 
   snakeArr.unshift(newSnakeHead);
 
   draw();
 }
 
-setup();
+var now;
+var then;
+var interval = 1000 / fps;
+var delta;
 
+function animate(now) {
+  if (!then) {
+    then = now;
+  }
+  requestAnimationFrame(animate);
+  delta = now - then;
+
+  if (delta > interval) {
+    then = now - (delta % interval);
+
+    doIteration();
+  }
+}
+
+setup();
 document.addEventListener('keydown', setSnakeDirectionFromKeyboard);
-let game = setInterval(doIteration, gameSpeed);
+animate();
