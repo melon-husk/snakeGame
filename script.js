@@ -2,8 +2,8 @@ var gameSpeed = 100;
 
 const boxWidth = 600;
 const boxHeight = 600;
-const elementsX = 50;
-const elementsY = 50;
+const elementsX = 100;
+const elementsY = 100;
 const elementWidth = Math.floor(boxWidth / elementsX);
 const elementHeight = Math.floor(boxHeight / elementsY);
 const boxXelements = Math.floor(boxWidth / elementWidth);
@@ -32,10 +32,12 @@ snakeheadImg.src = 'snake2.png';
 const snakeTailImg = new Image();
 snakeTailImg.src = 'snakeTail.png';
 
-const enemyCount = 15;
-const friendCount = 15;
-const borderCollisionScoreChange = -5;
+const enemyCount = 100;
+const friendCount = 300;
+
+const borderCollisionScoreChange = -1;
 const borderCollisionLengthChange = -1;
+
 let keyboardDirection = 'LEFT';
 
 let elementsArr = [];
@@ -79,21 +81,27 @@ function setup() {
     elementsArr.push(newFriend);
   }
 }
+function getRandomCoordinates(elementProperties) {
+  return {
+    x: Math.floor(Math.random() * boxXelements) * elementProperties.width,
+    y: Math.floor(Math.random() * boxYelements) * elementProperties.height,
+  };
+}
 
 function getRandomElement(elementProperties) {
-  var _x = Math.floor(Math.random() * boxXelements) * elementProperties.width;
-  var _y = Math.floor(Math.random() * boxYelements) * elementProperties.height;
-
+  let randomCoordinates = getRandomCoordinates(elementProperties);
+  let match = false;
   for (var i = 0; i < elementsArr.length; i++) {
     let other = elementsArr[i];
-    if (other.x == _x || other.y == _y) {
-      return getRandomElement(elementProperties);
+    if (other.x == randomCoordinates.x && other.y == randomCoordinates.y) {
+      randomCoordinates = getRandomCoordinates(elementProperties);
+      i = 0;
     }
   }
 
   return Object.assign(elementProperties, {
-    x: _x,
-    y: _y,
+    x: randomCoordinates.x,
+    y: randomCoordinates.y,
   });
 }
 
@@ -153,7 +161,6 @@ function moveSnakeByDirection(collisionBorder = false) {
   else if (_d == 'UP') currentSnake.y -= elementHeight;
   else if (_d == 'RIGHT') currentSnake.x += elementWidth;
   else if (_d == 'DOWN') currentSnake.y += elementHeight;
-  
 }
 
 function elementCollision(cSnake, arr) {
@@ -166,6 +173,7 @@ function elementCollision(cSnake, arr) {
   }
   return false;
 }
+
 function borderCollision(cSnake) {
   let border = '';
   if (cSnake.x < elementWidth) {
@@ -207,12 +215,7 @@ function draw() {
 
   ctx.font = '30px Arial';
   ctx.strokeText('Score: ' + score, 10, 50);
-  ctx.font = '30px Arial';
-  ctx.strokeText('waiting: ' + snakeLengthWaiting, 50, 100);
-  ctx.font = '30px Arial';
-  ctx.strokeText('direction: ' + keyboardDirection, 150, 150);
-  ctx.font = '30px Arial';
-  ctx.strokeText('borderCol: ' + debugBorderColision, 250, 190);
+
   ctx.drawImage(
     currentSnake.image,
     currentSnake.x,
@@ -223,7 +226,6 @@ function draw() {
 }
 
 let snakeLengthWaiting = 0;
-let debugBorderColision = '';
 
 function doIteration() {
   const lastSnake = {
@@ -241,7 +243,6 @@ function doIteration() {
   const collisionBorder = borderCollision(lastSnake);
   const reverseDirection = collisionBorder != false;
 
-  debugBorderColision = collisionBorder;
   if (collisionWithOther != false) {
     score += collisionWithOther.scoreChange;
     snakeLengthWaiting += collisionWithOther.lengthChange;
