@@ -84,7 +84,7 @@ function getRandomElement(elementProperties) {
   var _x = Math.floor(Math.random() * boxXelements) * elementProperties.width;
   var _y = Math.floor(Math.random() * boxYelements) * elementProperties.height;
 
-  for (var i = iterateOptimize; i < elementsArr.length; i++) {
+  for (var i = 0; i < elementsArr.length; i++) {
     let other = elementsArr[i];
     if (other.x == _x || other.y == _y) {
       return getRandomElement(elementProperties);
