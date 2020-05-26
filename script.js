@@ -1,4 +1,4 @@
-var gameSpeed = 250;
+var gameSpeed = 100;
 
 const boxWidth = 600;
 const boxHeight = 600;
@@ -80,15 +80,14 @@ function setup() {
   }
 }
 
-function getRandomElement(elementProperties, iterateOptimize = 0) {
+function getRandomElement(elementProperties) {
   var _x = Math.floor(Math.random() * boxXelements) * elementProperties.width;
   var _y = Math.floor(Math.random() * boxYelements) * elementProperties.height;
 
   for (var i = iterateOptimize; i < elementsArr.length; i++) {
     let other = elementsArr[i];
     if (other.x == _x || other.y == _y) {
-      // Recurse until there is no collisiton
-      return getRandomElement(elementProperties, i);
+      return getRandomElement(elementProperties);
     }
   }
 
@@ -154,9 +153,7 @@ function moveSnakeByDirection(collisionBorder = false) {
   else if (_d == 'UP') currentSnake.y -= elementHeight;
   else if (_d == 'RIGHT') currentSnake.x += elementWidth;
   else if (_d == 'DOWN') currentSnake.y += elementHeight;
-  if (keyboardDirection != _d) {
-    console.log('direction', _d, 'newDirection',keyboardDirection,'collisionBorder', collisionBorder);
-  }
+  
 }
 
 function elementCollision(cSnake, arr) {
@@ -229,7 +226,6 @@ let snakeLengthWaiting = 0;
 let debugBorderColision = '';
 
 function doIteration() {
-  let addHead = false;
   const lastSnake = {
     x: currentSnake.x,
     y: currentSnake.y,
@@ -262,7 +258,6 @@ function doIteration() {
     snakeLengthWaiting = 0;
   } else if (snakeLengthWaiting > 0) {
     snakeLengthWaiting -= snakeLengthWaiting;
-    addHead = true;
   } else if (snakeArr.length > 0) {
     snakeArr.pop();
   }
