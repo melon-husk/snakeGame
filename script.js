@@ -33,7 +33,15 @@ const snakeTailImg = new Image();
 snakeTailImg.src = 'snakeTail.png';
 
 const enemyCount = 100;
-const friendCount = 300;
+const enemyScoreChange = -10;
+const enemyLengthChange = -3;
+
+const friendCount = 500;
+const friendScoreChange = 3;
+const friendLengthChange = 5;
+
+const selfScoreChange = -1;
+const selfLengthChange = 0;
 
 const borderCollisionScoreChange = -1;
 const borderCollisionLengthChange = -1;
@@ -52,14 +60,14 @@ function setup() {
     image: snakeheadImg,
     width: elementWidth,
     height: elementHeight,
-    lengthChange: 0,
-    scoreChange: 0,
+    lengthChange: selfLengthChange,
+    scoreChange: selfScoreChange,
   };
 
   for (let enemyI = 0; enemyI < enemyCount; enemyI++) {
     let newEnemy = getRandomElement({
-      scoreChange: -1,
-      lengthChange: -1,
+      scoreChange: enemyScoreChange,
+      lengthChange: enemyLengthChange,
       image: enemyImg,
       width: elementWidth,
       height: elementHeight,
@@ -70,8 +78,8 @@ function setup() {
   }
   for (let friendI = 0; friendI < friendCount; friendI++) {
     let newFriend = getRandomElement({
-      scoreChange: 1,
-      lengthChange: 1,
+      scoreChange: friendScoreChange,
+      lengthChange: friendLengthChange,
       image: friendImg,
       width: elementWidth,
       height: elementHeight,
@@ -163,11 +171,13 @@ function moveSnakeByDirection(collisionBorder = false) {
   else if (_d == 'DOWN') currentSnake.y += elementHeight;
 }
 
-function elementCollision(cSnake, arr) {
+function elementCollision(cSnake, arr, removeCollisionElement = true) {
   for (let i = 0; i < arr.length; i++) {
     if (cSnake.x == arr[i].x && cSnake.y == arr[i].y) {
       let collisionElement = arr[i];
-      arr.splice(i, 1);
+      if (removeCollisionElement) {
+        arr.splice(i, 1);
+      }
       return collisionElement;
     }
   }
@@ -239,9 +249,8 @@ function doIteration() {
   };
 
   const collisionWithOther = elementCollision(lastSnake, elementsArr);
-  const collisionWithSelf = elementCollision(lastSnake, snakeArr);
+  const collisionWithSelf = elementCollision(lastSnake, snakeArr, false);
   const collisionBorder = borderCollision(lastSnake);
-  const reverseDirection = collisionBorder != false;
 
   if (collisionWithOther != false) {
     score += collisionWithOther.scoreChange;
@@ -249,7 +258,7 @@ function doIteration() {
   } else if (collisionWithSelf != false) {
     score += collisionWithSelf.scoreChange;
     snakeLengthWaiting += collisionWithSelf.lengthChange;
-  } else if (reverseDirection) {
+  } else if (collisionBorder != false) {
     score += borderCollisionScoreChange;
     snakeLengthWaiting += borderCollisionLengthChange;
   }
@@ -258,7 +267,7 @@ function doIteration() {
     snakeArr.splice(snakeLengthWaiting - 1);
     snakeLengthWaiting = 0;
   } else if (snakeLengthWaiting > 0) {
-    snakeLengthWaiting -= snakeLengthWaiting;
+    snakeLengthWaiting--;
   } else if (snakeArr.length > 0) {
     snakeArr.pop();
   }
